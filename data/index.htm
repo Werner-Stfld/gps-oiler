@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+ 
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8">
+  <content-type charset="utf-8"></content-type>
+  <title>GPS-Oiler Settings</title>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title></title>
+  <meta name="description" content="Edit the PGS-Oiler settings. Settings will be persisted in the device.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+ 
+<body>
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"> -->
+
+  <!-- From CDN -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script> -->
+  <!-- From ESP8266 -->
+  <script type="text/javascript" src="vendor/vue.min-3.5.24.js"></script>
+  <script type="module">
+    import wifiComponent from "./js/WiFiComponent.js"
+    import tankComponent from "./js/TankComponent.js"
+    import statesComponent from "./js/StatesComponent.js"
+    import rainComponent from "./js/RainComponent.js"
+    import pumpComponent from "./js/PumpComponent.js"
+    import emergencyComponent from "./js/EmergencyComponent.js"
+    import displayComponent from "./js/DisplayComponent.js"
+
+    const {createApp, ref, reactive, provide, watch, onMounted} = Vue;
+    createApp({
+      setup() {
+        // declare reactive states
+        const wifi = ref({name: "GPS-OILER", password: "12345678"})
+        const tank = ref({"content": 100, "capacity": 150})
+        const states = ref({
+            "oiling": false,
+            "emergency": false,
+            "raining": true,
+            "wifi": true,
+            "washing": false,
+            "pumpDistance": 5000
+        })
+        const rain = ref ({
+          "onThreshold": 600,
+          "offThreshold": 800,
+          "distanceMultiplier": 1.5,
+          "afterRainOilingPulses": 5
+        })
+        const pump = ref ({
+            "pulsesPerMl": 50,
+            "pulseOn": 50,
+            "pulseOff":500
+        })
+        const emergency = ref ({
+          "timeout": 180,
+          "speed": 60
+        })
+        const display = ref ({
+          "timeZone": 1, // MEZ
+          "brightness": 100
+        })
+        const system = ref ({
+            "rev": "0.8.15"
+        })
+
+        // Share the states to be used in the components
+        provide('wifi', wifi)
+        provide('tank', tank)
+        provide('states', states)
+        provide('rain', rain)
+        provide('pump', pump)
+        provide('emergency', emergency)
+        provide('display', display)
+        provide('system', system)
+
+        function Dump() {
+          console.log("wifi: " + JSON.stringify(wifi.value))
+          console.log("tank: " + JSON.stringify(tank.value))
+          console.log("states: " + JSON.stringify(states.value))
+          console.log("rain: " + JSON.stringify(rain.value))
+          console.log("pump: " + JSON.stringify(pump.value))
+          console.log("emergency: " + JSON.stringify(emergency.value))
+          console.log("display: " + JSON.stringify(display.value))
+          console.log("system: " + JSON.stringify(system.value))
+        }
+        async function update() {
+            const items = [
+              { u: system, uri: "/api/system" },
+              { u: wifi, uri: "/api/wifi" },
+              { u: display, uri: "/api/display" },
+              { u: emergency, uri: "/api/emergency" },
+              { u: pump, uri: "/api/pump" },
+              { u: rain, uri: "/api/rain" },
+              { u: states, uri: "/api/states" },
+              { u: tank, uri: "/api/tank" }
+            ]
+            for (let v of items) {
+              const response = await fetch(v.uri)
+              v.u.value = await response.json()
+              console.log(v.u.value)
+            }
+        }
+        async function save() {
+            const items = [
+              { u: display, uri: "/api/display" },
+              { u: rain, uri: "/api/rain" },
+              { u: wifi, uri: "/api/wifi" },
+              { u: tank, uri: "/api/tank" },
+              { u: states, uri: "/api/states" },
+              { u: pump, uri: "/api/pump" },
+              { u:emergency, uri: "/api/emergency" }
+            ]
+            for (let v of items) {
+              try {
+                console.log(v.u.value)
+                const response = await fetch(v.uri, {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(v.u.value)
+                })
+                if (response.status === 204) {
+                  console.log("PUT successfully completed.")
+                }
+              } catch (error) {
+                console.error("Fehler bei PUT: " , error)
+              }
+            }
+        }
+        async function backup() {
+
+          const response = await fetch("/api/backup")
+          const blob = await response.blob()
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "backup.json";
+          link.click();
+          URL.revokeObjectURL(link.href);
+
+        }
+
+        async function restore() {
+          const restoreFile = document.getElementById("restoreFile");
+          restoreFile.click();
+        }
+
+        async function onRestoreFileChange() {
+            const file = restoreFile.files[0];
+            if (!file) return; // abort
+
+            try {
+                const text = await file.text();
+                const json = JSON.parse(text);
+
+                const response = await fetch("/api/backup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(json)
+                });
+
+                if (response.ok) {
+                    alert("Restore succeeded");
+                } else {
+                    alert("Restore failed");
+                }
+            } catch (e) {
+                alert(e);
+            }
+            restoreFile.value = ""; // Reset für nächsten Restore
+        };
+
+        onMounted(update)
+
+        return {
+          // expose to template
+          wifi,
+          tank,
+          states,
+          rain,
+          pump,
+          emergency,
+          display,
+          system,
+          update,
+          save,
+          backup,
+          restore,
+          onRestoreFileChange,
+          Dump
+        }
+      },
+      components: {
+        wifiComponent,
+        tankComponent,
+        statesComponent,
+        rainComponent,
+        pumpComponent,
+        emergencyComponent,
+        displayComponent
+      },
+    }).mount('#app')
+  </script>
+
+   <div id="app">
+    <header>
+       <h1>GPS Oiler</h1> <!-- add dynamic class binding here -->
+    </header>
+    <main>
+
+      <!-- @submit.prevent="addTodo" verhindert standardbehandlung des browsers. Stattdessen wird addTodo gerufen. -->
+      <div class="buttons" >
+        <button @click="save" class="main-button" >Apply</button>
+        <button @click="update"class="main-button">Refresh</button>
+      </div>
+      <div class="settings" >
+        <states-component></states-component>
+        <display-component></display-component>
+        <emergency-component></emergency-component>
+      </div>
+      <div class="buttons">
+        <button @click="save" class="main-button" >Apply</button>
+        <button @click="update"class="main-button">Refresh</button>
+      </div>
+      <div class="settings" >
+        <tank-component></tank-component>
+        <rain-component></rain-component>
+        <pump-component></pump-component>
+        <wifi-component></wifi-component>
+      </div>
+      <div class="buttons">
+        <button @click="save" class="main-button" >Apply</button>
+        <button @click="update" class="main-button">Refresh</button>
+        <button @click="backup" class="main-button">Backup</button>
+        <button @click="restore" class="main-button">Restore</button>
+        <input id="restoreFile" class="file-input" type="file" @change="onRestoreFileChange" title="restore filename" accept=".json" />
+      </div>
+    </main>
+    <footer>
+      <div>by H&W 2026: {{ system.rev }}</div>
+    </footer>
+  </div>
+</body>
+</html>
