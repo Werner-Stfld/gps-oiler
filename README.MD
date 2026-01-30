@@ -38,16 +38,39 @@ Ich habe die Projekt-Task von platform.io verwendet:
 
 Als erfahrener Anwender eines Ölers bin ich der Meinung, dass ein Ölen aufgrund des Neustarts nicht notwendig ist. Es sollte jedoch sichergestellt werden Ölen nach einem Regen nicht zu "vergessen". Moped im Regen abgestellt. Bei Weiterfahrt mit schönem Wetter sollte die Kette nachgeölt werden.
 
-## [Beschreibung](docs/Beschreibung/README.md)
+## Debuggen ##
 
-## [Nachbau](docs/Nachbau/README.md)
+Trotz der Tatsache, dass der gps-oiler mit dem arduino framework implementiert ist kann der Debugger genutzt werden.
 
-## [Vorkenntnisse](docs/Vorkenntnisse/README.md)
+WICHTIG:
 
-## [Firmware Version 2.7](docs/Firmware_2.7/README.md)
+Installation des korrekten JTAG Treibers:
+Hinweis: Habe viel Zeit damit verbracht auf ChatGPT zu hören das immter wieder behauptet hatte, man müsste darauf achten ein MI_01 bei der Hardware-ID zu finden. MI_02 wäre absolut falsch. => Das stimmt nicht. Debuggen mit MI_02 funktioniert bei mir.
 
-## [Mainboard Rev. 5](docs/Mainboard_Rev5/README.md)
+In Powershell (admin) ausführen.
+Lädt den Treiber für jtag interface.
+Invoke-WebRequest 'https://dl.espressif.com/dl/idf-env/idf-env.exe' -OutFile .\idf-env.exe; .\idf-env.exe driver install --espressif
 
-## [Bin Datei aufspielen](docs/Firmware_BIN/README.md)
+Ich habe anschließend den Treiber der jtag Schnittstelle aktualisiert. 
+=> in dem Windows Device Manager mit verbundenem  esp c3.
+=> Auswahl der Schnittstelle under Universal Seriell Bus Device. USB JTAG/serial debug unit auswählen.
+=> Properties, Tab Driver öffnen. Dort Update Driver aktivieren und Option Search automatically for drivers.
+   Der richtige Treiber hat: 
+     Driver provider: libwdi
+     Digital Signer:  Espressif Systems (Shanghei) Co. Ltd.
 
-## [Einbauvorschlag](docs/Tracer_900GT/README.md)
+Debugger starten:
+
+WICHTIG:
+
+-  Wegen einer Schwäche der boot Reihenfolge mit dem arduino framework ist es wichtig den Debugger nach manuellem Upload exlizit zu starten. Das Funktioniert mit der Variante POI Debug (skip Pre-Debug). Falls man das nicht macht, greifen die Breakpoints meistens nicht. (Timing)
+-  Breakpoints auf **setup** setzen funktioniert nicht, da in dem Binars viele Setup Funktionen enthalten sind. Da reichen die 3 verfügbaren Hardware-Breakpoints nicht aus. Deshalb in platform.ini folgende Angabe verwenden: debug_init_break = break src/main.cpp:xx (xx: Zeilennummer)
+Leere Angabe ist auch gut, damit nicht initial setup genommen wird.
+debug_init_break =
+
+Hinweis:
+
+Nach Starten der Debug-Sitzung hält das System an und zeigt im Call-Stack ??@0x40000000 Unknown Source und Status "Paused on exception".
+Spätestens jetzt sollten Breakpoints gesetzt werden.
+Mit (Continue) F5 kann das Programm fortgesetzt werden.
+
