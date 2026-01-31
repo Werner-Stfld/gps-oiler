@@ -10,7 +10,6 @@
 #include "QrScreen.h"
 #include "ActionScreen.h"
 #include "DefaultScreen.h"
-#include "BrightnessScreen.h"
 #include "InfoScreen.h"
 
 // detects falling edges of a button. Returns the time, the button has been pressed
@@ -76,7 +75,7 @@ public:
 
 class DisplayController;
 
-constexpr int numScreens = 8;
+constexpr int numScreens = 7;
 class DisplayController : public VarContainer 
 {
     TFT_eSPI tft = TFT_eSPI();
@@ -90,13 +89,11 @@ class DisplayController : public VarContainer
     DefaultScreen darkDefaultScreen = DefaultScreen(spr, timeZone, true);
     ResetTankScreen resetTankScreen = ResetTankScreen(spr);
     ResetWiFiScreen resetWiFiScreen = ResetWiFiScreen(spr);
-    BrightnessScreen brightnessScreen = BrightnessScreen(spr, brightness);
     InfoScreen infoScreen = InfoScreen(spr);
 
     ScreenBase *screens[numScreens] = {
         &defaultScreen, 
         &darkDefaultScreen, 
-        &brightnessScreen, 
         &resetTankScreen,
         &infoScreen,
         &wifiQrScreen,
@@ -138,9 +135,9 @@ public:
         wifiQrScreen.execute = startWiFi;
     }
 
-    static void setBrightness(int percent) {
-        Serial.print("DisplayController::setBrightness: ");
-        Serial.println(percent);
+    void OnSetBrightness(void setBrightness()) {
+        defaultScreen.execute = setBrightness;
+        darkDefaultScreen.execute = setBrightness;
     }
 };
 

@@ -49,8 +49,17 @@ void startWiFi() {
   webController.startWiFi();
 }
 
-// setup the oiler scetch
+void setDisplayBrightness() {
+  ledcWrite(BRIGHTNESS_CHANNEL, map(displayController.brightness.get(), 100, 0, 0, 1023));
+}
 
+//=============================================================================================
+//
+// SETUP
+//
+//=============================================================================================
+
+// setup the oiler scetch
 void setup()
 {
   delay(500); // required by c3, if CDC is on
@@ -88,10 +97,13 @@ void setup()
   displayController.OnTankReset(tankReset);
   displayController.OnResetWiFi(wiFiReset);
   displayController.OnStartWiFi(startWiFi);
+  displayController.OnSetBrightness(setDisplayBrightness);
 
+  ledcSetup(BRIGHTNESS_CHANNEL, BRIGHTNESS_CHANNEL_FREQUENCY, 10); // channel 0, 5 kHz, 10 bit resolution
+  ledcAttachPin(BRIGHTNESS_PIN, BRIGHTNESS_CHANNEL); // use channel 0 to control brightness pin
   pinMode(BUTTON_PIN, INPUT);
+  setDisplayBrightness(); // set initial brightness
 }
-
 static bool edgeSignalled = true;
 
 // standStillEdgeDetected detects transition from speed > 3,0 km/h to <= 2.0. Triggers saving the vars modified so far.
@@ -122,6 +134,12 @@ float getOilingSpeed() {
   }
   return oilingSpeed;
 }
+
+//=============================================================================================
+//
+// LOOP
+//
+//=============================================================================================
 
 void loop()
 {

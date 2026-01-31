@@ -123,6 +123,25 @@ void DefaultScreen::loop(ScreenArgs &args) {
 
     if (!displayTimeout.retriggered()) 
         return;
+
+    displayTimeout.setRetriggerTimeout(50); // After first Timeout 50 ms
+    displayTimeout.retrigger();
+    
+    if (args.timeToActionInPercent) {
+        int b = displayController.brightness.get();
+        b += sign*2;
+        if (b < 0) {
+            b = 0;
+            sign = 1;
+        }
+        if (b > 100) {
+            b = 100;
+            sign = -1;
+        }
+        displayController.brightness.set(b, SetMode::cache);
+        execute();
+    }
+
     updateData();
 
     if (!updateRequired)

@@ -21,9 +21,7 @@ DisplayController::DisplayController() {
     add(&currScreen);
     add(&brightness);
     add(&timeZone);
-
-    brightnessScreen.execute = setBrightness;
-};
+}
 
 void DisplayController::loop(bool pressed)
 {

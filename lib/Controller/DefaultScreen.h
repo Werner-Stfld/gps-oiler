@@ -28,6 +28,8 @@ class DefaultScreen : public ScreenBase {
     bool showOiling = false;
     int oilingDistanceInPercent = 0;
     int noSattelite = 0;
+    int sign = 1;
+
     void loop(ScreenArgs &state);
     void setup ();
     Timer tankToggleTimeout = Timer(500);
