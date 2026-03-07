@@ -16,8 +16,9 @@ extern const uint32_t GPSBaud; // Baudrate für Software Serial
 
 extern const int OIL_PIN;       // Pin an dem die Pumpe angesteuert wird
 
-#define TFT_DC 10   
-#define TFT_CS 5
+#if false
+#define TFT_DC 9   
+#define TFT_CS 8
 #define TFT_MOSI 6
 #define TFT_SCLK 4
-
+#endif

@@ -7,12 +7,12 @@ const char *firmware_Vers = "3.0.1-develop"; // Aktuelle Firmwareversion
 const int RAIN_SENSOR_PIN = A1; // Pin für Regensensor
 const int VCC_SENSOR_PIN = A3; // Pin für VCC Messung
 
-const int BUTTON_PIN = 20;  // Taster zum Resetten des AP, Setzt ssid auf "OILER" und Passwort wird deaktiviert
-const int BRIGHTNESS_PIN = 8;  // Taster zum Resetten des AP, Setzt ssid auf "OILER" und Passwort wird deaktiviert
+const int BUTTON_PIN = 21;  // Taster zum Resetten des AP, Setzt ssid auf "OILER" und Passwort wird deaktiviert
+const int BRIGHTNESS_PIN = 5;  // Taster zum Resetten des AP, Setzt ssid auf "OILER" und Passwort wird deaktiviert
 const int BRIGHTNESS_CHANNEL = 0;  // Taster zum Resetten des AP, Setzt ssid auf "OILER" und Passwort wird deaktiviert
 const int BRIGHTNESS_CHANNEL_FREQUENCY = 5000;  // Taster zum Resetten des AP, Setzt ssid auf "OILER" und Passwort wird deaktiviert
 
-const int RXPin = 7;       // Für Software Serial
+const int RXPin = 20;       // Für Software Serial
 const uint32_t GPSBaud = 9600; // Baudrate für Software Serial
 
 const int OIL_PIN = 2;       // Pin an dem die Pumpe angesteuert wird
