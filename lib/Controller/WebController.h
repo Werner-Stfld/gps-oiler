@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Arduino.h>                  //
-#include <WiFi.h>              // Für WIFI
-#include <WebServer.h>         // Für WIFI
-#include <LittleFs.h>                 // LittleFS library
-#include <ArduinoJson.h>              // Json Bibliothek
-#include <esp_system.h>
+#include <Arduino.h>
+#include <WiFi.h>
+#include <WebServer.h>
+#include <LittleFs.h>
+#include <ArduinoJson.h>
+//#include <esp_system.h>
 
 #include "globals.h"
 #include "uservar.h"

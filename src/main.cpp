@@ -156,7 +156,7 @@ void loop()
 
     if (minuteTimer.retriggered() || (gpsController.validData() && standStillEdgeDetected(gpsController.speed()))) { 
       // Flush automatically changing values once per minute or when gps is active indicating speed less then 2 km/h
-      // remember: all flush() are writing only, if values have been modified 
+      // remember: All flush() are writing only, if there are unsaved changes.
       tankController.tankContent.flush();
       distanceController.oilingDistance.flush();
       rainController.raining.flush();
@@ -164,7 +164,7 @@ void loop()
     }
   }
 
-  pumpController.loop(oilingSpeed);                     // process pump requests
+  pumpController.loop(oilingSpeed, tankController.fillGradeInPercent());  // process pump requests
   displayController.loop(digitalRead(BUTTON_PIN)==LOW); // display and input button handling
   webController.loop();                                 // process web requests
   prefs.AssertClosed();                                 // Assert that Pref storage is closed

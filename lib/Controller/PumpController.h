@@ -60,8 +60,8 @@ class PumpController: public VarContainer {
     restore();
   }
 
-  void loop(float speed) {
-    if (state == pulseIdle) {
+  void loop(float speed, unsigned int tankFillGradeInPercent) {
+    if (state == pulseIdle && tankFillGradeInPercent > 0) { // Don't oil if tank is empty
       if (washing) {
         state = pulseOn;
       } else {
